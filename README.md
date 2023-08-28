@@ -1,4 +1,4 @@
-# Hololive Newtab Extension
+# Custom Newtab Extension
 - Replace your new tab page with a custom themed page; featuring notes, to-do list, Gmail unread count & currated Hololive HD wallpapers
 - Private/Incognito browsing is not supported
 
