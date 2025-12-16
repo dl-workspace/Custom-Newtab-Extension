@@ -1,3 +1,6 @@
+// Use appStorage (browser.storage.local wrapper) if available, fallback to localStorage
+var store = window.appStorage || localStorage;
+
 window.loadSetTimeModule = function(e) {
   var t = true;
   var n = document.getElementById("setTimeAutomatically");
@@ -12,14 +15,14 @@ window.loadSetTimeModule = function(e) {
       init: function() {
           var e = this;
           var t = 0;
-          if (localStorage.getItem("latency")) {
-              t = Number(localStorage.getItem("latency"));
+          if (store.getItem("latency")) {
+              t = Number(store.getItem("latency"));
               e.newTime = new Date(Number(new Date) + t)
           } else {
               e.newTime = new Date
           }
           var n = "";
-          if (!localStorage.getItem("time_format") || localStorage.getItem("time_format") === "12h") {
+          if (!store.getItem("time_format") || store.getItem("time_format") === "12h") {
               n = '<select id="selectAmOrPm"><option value="am">AM</option><option value="pm">PM</option></select>'
           }
           var l = '<label><span>Change Time</span><label class="changeTime"><select id="selectHours" ></select><select id="selectMins" ></select>' + n + "</label></label>";
@@ -33,10 +36,10 @@ window.loadSetTimeModule = function(e) {
           var i = function() {
               document.getElementById("selectHours").innerHTML = "";
               document.getElementById("selectMins").innerHTML = "";
-              var t = localStorage.getItem("time_format") === "24h" ? 24 : 12;
+              var t = store.getItem("time_format") === "24h" ? 24 : 12;
               for (var n = 0; n < t; n++) {
                   var r = document.createElement("OPTION");
-                  if (!localStorage.getItem("time_format") || localStorage.getItem("time_format") === "12h") {
+                  if (!store.getItem("time_format") || store.getItem("time_format") === "12h") {
                       n = n + 1
                   }
                   r.value = n < 10 ? "0" + n : n.toString();
@@ -45,7 +48,7 @@ window.loadSetTimeModule = function(e) {
                       r.setAttribute("selected", true)
                   }
                   document.getElementById("selectHours").appendChild(r);
-                  if (!localStorage.getItem("time_format") || localStorage.getItem("time_format") === "12h") {
+                  if (!store.getItem("time_format") || store.getItem("time_format") === "12h") {
                       n = n - 1
                   }
               }
@@ -80,7 +83,7 @@ window.loadSetTimeModule = function(e) {
               if (isNaN(t) === true) {
                   t = 0
               }
-              localStorage.setItem("latency", t);
+              store.setItem("latency", t);
               browser.runtime.sendMessage({
                   changeOptions: utils.getGlobalOptions()
               })
@@ -94,8 +97,8 @@ window.loadSetTimeModule = function(e) {
               e.timmer = null
           }
           e.timmer = setInterval(function() {
-              if (localStorage.getItem("latency")) {
-                  t = Number(localStorage.getItem("latency"))
+              if (store.getItem("latency")) {
+                  t = Number(store.getItem("latency"))
               }
               e.newTime = new Date(Number(new Date) + t);
               var r = document.querySelectorAll("option[selected=true]");
@@ -105,7 +108,7 @@ window.loadSetTimeModule = function(e) {
               var l = e.newTime.getHours() < 10 ? "0" + e.newTime.getHours() : e.newTime.getHours();
               var m = e.newTime.getMinutes() < 10 ? "0" + e.newTime.getMinutes() : e.newTime.getMinutes();
               var a = false;
-              if (!localStorage.getItem("time_format") || localStorage.getItem("time_format") === "12h") {
+              if (!store.getItem("time_format") || store.getItem("time_format") === "12h") {
                   if (!document.getElementById("selectAmOrPm")) {
                       n = document.createElement("SELECT");
                       n.setAttribute("id", "selectAmOrPm");
@@ -149,8 +152,8 @@ window.loadSetTimeModule = function(e) {
           this.timmer = null
       }
   };
-  if (localStorage.getItem("setTimeAutomatically")) {
-      t = localStorage.getItem("setTimeAutomatically") === "yes" ? true : false;
+  if (store.getItem("setTimeAutomatically")) {
+      t = store.getItem("setTimeAutomatically") === "yes" ? true : false;
       n.checked = t;
       if (t) {
           l.remove()
@@ -166,12 +169,12 @@ window.loadSetTimeModule = function(e) {
       t = e.target.checked;
       if (t) {
           l.remove();
-          localStorage.setItem("latency", 0)
+          store.setItem("latency", 0)
       } else {
           l.remove();
           l.init()
       }
-      localStorage.setItem("setTimeAutomatically", t ? "yes" : "no");
+      store.setItem("setTimeAutomatically", t ? "yes" : "no");
       browser.runtime.sendMessage({
           changeOptions: utils.getGlobalOptions()
       })

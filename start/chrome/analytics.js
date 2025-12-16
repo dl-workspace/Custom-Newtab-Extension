@@ -1,4 +1,7 @@
 (function(e) {
+  // Use appStorage (browser.storage.local wrapper) if available, fallback to localStorage
+  var store = e.appStorage || localStorage;
+  
   var t = browser.runtime.id;
   var a = browser.i18n.getMessage("extName");
   var o = function(t) {
@@ -15,7 +18,7 @@
       else ga("send", t)
   };
   var r = function(t, o) {
-      if (t != "opt-out" && t != "opted-out" && localStorage.getItem("optout") == "1") return;
+      if (t != "opt-out" && t != "opted-out" && store.getItem("optout") == "1") return;
       if (e.debug) console.log("TRACK: ", t, o);
       else {
           var r = {
@@ -46,9 +49,9 @@
       var o = e.getUTCDate() < 10 ? "0" + e.getUTCDate() : "" + e.getUTCDate();
       c = t + a + o;
       s = 0;
-      var l = localStorage.getItem("installdt");
+      var l = store.getItem("installdt");
       if (!l) {
-          localStorage.setItem("installdt", c)
+          store.setItem("installdt", c)
       } else {
           try {
               var r = l.substr(0, 4);
@@ -59,8 +62,8 @@
               s = Math.floor(m / (1e3 * 60 * 60 * 24))
           } catch (e) {}
       }
-      localStorage.setItem("installdc", s);
-      localStorage.setItem("BST", (new Date).toISOString())
+      store.setItem("installdc", s);
+      store.setItem("BST", (new Date).toISOString())
   };
 
   function n() {
@@ -81,7 +84,7 @@
   var I = "update-" + h[0] + "-" + h[1] + "-" + h[2];
   var p = function(e, a) {
       r(e, a);
-      var o = localStorage.getItem("confSE") || t;
+      var o = store.getItem("confSE") || t;
       if (o.length === 32 && o.indexOf("://") === -1) o = "https://chrome.google.com/webstore/detail/" + n().replace(/\./g, "_") + "/" + o;
     if (e == "click-ChangeCity") {
           browser.tabs.create({
@@ -147,9 +150,9 @@
                       type: "showMinor"
                   })
               }
-              var a = JSON.parse(localStorage.getItem("weather_location"));
-              var l = JSON.parse(localStorage.getItem("weather_data"));
-              var r = localStorage.getItem("weather_location_isvalid") === "true";
+              var a = JSON.parse(store.getItem("weather_location"));
+              var l = JSON.parse(store.getItem("weather_data"));
+              var r = store.getItem("weather_location_isvalid") === "true";
               if (r) {
                   browser.tabs.sendMessage(t, {
                       type: "weather_info",
@@ -162,7 +165,7 @@
                   browser.tabs.sendMessage(t, {
                       type: "error_get_weather_in_city",
                       info: {
-                          weather_location: JSON.parse(localStorage.getItem("weather_location")),
+                          weather_location: JSON.parse(store.getItem("weather_location")),
                           error_msg: "Unable to get weather data."
                       }
                   })
@@ -174,13 +177,13 @@
   function b(t) {
       if (e.debug) console.log("Extension Installed");
       r("installed");
-      if (localStorage.getItem("installdt") === null) {
-          localStorage.setItem("installdt", c)
+      if (store.getItem("installdt") === null) {
+          store.setItem("installdt", c)
       }
       y();
       u = true;
       browser.tabs.create({
-          url: localStorage.getItem("newtab_url"),
+          url: store.getItem("newtab_url"),
           active: false
       }, function() {});
       browser.tabs.query({
@@ -252,11 +255,11 @@
               })
           }
           if ((user["ver_reset_clicked_options"] + "").indexOf(t) >= 0) {
-              localStorage.removeItem("theme_clicked")
+              store.removeItem("theme_clicked")
           }
-          if (localStorage.getItem("countdownToTime")) {
+          if (store.getItem("countdownToTime")) {
               var o = new Date;
-              var l = new Date(localStorage.getItem("countdownToTime"));
+              var l = new Date(store.getItem("countdownToTime"));
               if (o > l) {
                   var c = o.getFullYear();
                   var i = l.getMonth() + 1;
@@ -266,8 +269,8 @@
                   if (i == 10 && n == 31 || i == 12 && n == 24 || i == 12 && n == 25 || i == 12 && n == 31 || i == 1 && n == 1) {
                       var h = `${c}-${("0"+i).slice(-2)}-${("0"+n).slice(-2)}T${("0"+g).slice(-2)}:${("0"+u).slice(-2)}`;
                       if (o > new Date(h)) h = `${c+1}-${("0"+i).slice(-2)}-${("0"+n).slice(-2)}T${("0"+g).slice(-2)}:${("0"+u).slice(-2)}`;
-                      localStorage.setItem("countdownToTime", h);
-                      localStorage.setItem("countdown_notified", "no")
+                      store.setItem("countdownToTime", h);
+                      store.setItem("countdown_notified", "no")
                   }
               }
           }
@@ -276,7 +279,7 @@
 
   function w(t, a) {
       if (e.debug) console.log("Extension Active");
-      if (localStorage.getItem("optout") === "1") {
+      if (store.getItem("optout") === "1") {
           r("opted-out", a)
       } else {
           r("active", a)
@@ -284,22 +287,22 @@
   }
   i();
   e.currVersion = e.currVersion || n();
-  e.prevVersion = e.prevVersion || localStorage.getItem("version") || localStorage.getItem("installed");
+  e.prevVersion = e.prevVersion || store.getItem("version") || store.getItem("installed");
   if (currVersion != prevVersion) {
       if (prevVersion === null) {
           b(currVersion)
       } else {
-          localStorage.setItem("instact", 1);
+          store.setItem("instact", 1);
           v(currVersion, prevVersion)
       }
-      localStorage.setItem("version", currVersion)
+      store.setItem("version", currVersion)
   }
-  var k = localStorage.getItem("last_active");
+  var k = store.getItem("last_active");
   e.last_active = false;
   if (!k || k !== c) {
-      if (k) localStorage.setItem("instact", 1);
+      if (k) store.setItem("instact", 1);
       w(currVersion, s);
-      localStorage.setItem("last_active", c);
+      store.setItem("last_active", c);
       e.last_active = true
   }
   browser.runtime.onMessage.addListener(function(t, a, o) {
@@ -318,11 +321,11 @@
       } else if (t.rateStatus) {
           if (s < 1) {
               o(0)
-          } else if (localStorage.getItem("rate_clicked") == null) {
+          } else if (store.getItem("rate_clicked") == null) {
               o(1)
-          } else if (localStorage.getItem("rate_clicked") == "yes" || localStorage.getItem("rate_clicked") == "feedback") {
+          } else if (store.getItem("rate_clicked") == "yes" || store.getItem("rate_clicked") == "feedback") {
               o(0)
-          } else if (localStorage.getItem("rate_clicked") == "cws") {
+          } else if (store.getItem("rate_clicked") == "cws") {
               o(-1)
           }
       }
@@ -476,7 +479,7 @@
 			storageSettings(sessionStorage);
 		}
 		else{
-			storageSettings(localStorage);
+			storageSettings(store);
 		}
   }
 })(this);

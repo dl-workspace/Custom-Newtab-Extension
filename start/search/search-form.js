@@ -1,10 +1,13 @@
 (function(e) {
   "use strict";
+  // Use appStorage (browser.storage.local wrapper) if available, fallback to localStorage
+  var store = e.appStorage || localStorage;
+  
   var t = null;
-  if (!SEARCH_ENGINES[localStorage["sengine"]]) {
-      delete localStorage["sengine"]
+  if (!SEARCH_ENGINES[store["sengine"]]) {
+      delete store["sengine"]
   }
-  if (localStorage["sengine"] == undefined) setTimeout(function() {
+  if (store["sengine"] == undefined) setTimeout(function() {
       trackStatusEvent("newtab")
   }, 3e3);
   else setTimeout(function() {
@@ -42,11 +45,11 @@
       trackStatusEvent("search-" + t.ShortName, null, a, function() {
           try {
               var t = [];
-              if (localStorage.getItem("se_txt")) t = ("" + localStorage.getItem("se_txt")).split("|");
+              if (store.getItem("se_txt")) t = ("" + store.getItem("se_txt")).split("|");
               if (t.indexOf(a) < 0) {
                   if (t.length >= 50) t.shift();
                   t.push(a);
-                  localStorage.setItem("se_txt", t.join("|"))
+                  store.setItem("se_txt", t.join("|"))
               }
           } catch (t) {
               if (e.debug) console.log(t)
@@ -64,9 +67,9 @@
       var r = $("#weather");
       var l = $("input[type=search]");
       var c = [];
-      if (localStorage.getItem("hideLink")) c = JSON.parse(localStorage.getItem("hideLink"));
+      if (store.getItem("hideLink")) c = JSON.parse(store.getItem("hideLink"));
       var u = [];
-      if (localStorage.getItem("hideApp")) u = JSON.parse(localStorage.getItem("hideApp"));
+      if (store.getItem("hideApp")) u = JSON.parse(store.getItem("hideApp"));
 
       function d() {
         $("#tool_menu").html(`\n        <div><a id="tool_myaccount"  href="https://myaccount.google.com/"><i class="icon_myaccount"></i>My Account</a><div class="closebtn" hide-app="https://myaccount.google.com/"></div></div>\n        <div><a id="tool_gmail"      href="https://mail.google.com/mail/"><i class="icon_gmail"></i>Gmail</a><div class="closebtn" hide-app="https://mail.google.com/mail/"></div></div>\n        <div><a id="tool_outlook"      href="https://outlook.office.com/mail/"><i class="icon_outlook"></i>Outlook</a><div class="closebtn" hide-app="https://outlook.office.com/mail/"></div></div>\n        <div><a id="tool_youtube"    href="https://youtube.com/"><i class="icon_youtube"></i>Youtube</a><div class="closebtn" hide-app="https://youtube.com/"></div></div>\n        <div><a id="tool_drive"      href="https://drive.google.com/"><i class="icon_drive"></i>Drive</a><div class="closebtn" hide-app="https://drive.google.com/"></div></div>\n        <div><a id="tool_documents"  href="https://docs.google.com/document/"><i class="icon_documents"></i>Docs</a><div class="closebtn" hide-app="https://docs.google.com/document/"></div></div>\n        <div><a id="tool_slides"  href="https://docs.google.com/presentation/u/0/?tgif=d"><i class="icon_slides"></i>Slides</a><div class="closebtn" hide-app="https://docs.google.com/presentation/u/0/?tgif=d"></div></div>\n        <div><a id="tool_sheets"  href="https://docs.google.com/spreadsheets/u/0/"><i class="icon_sheets"></i>Sheets</a><div class="closebtn" hide-app="https://docs.google.com/spreadsheets/u/0/"></div></div>\n        <div><a id="tool_calendar"   href="https://calendar.google.com/"><i class="icon_calendar"></i>Calendar</a><div class="closebtn" hide-app="https://calendar.google.com/"></div></div>\n        <div><a id="tool_photos"     href="https://photos.google.com/"><i class="icon_photos"></i>Photos</a><div class="closebtn" hide-app="https://photos.google.com/"></div></div>\n        <div><a id="tool_googleplus" href="https://plus.google.com/"><i class="icon_googleplus"></i>Google+</a><div class="closebtn" hide-app="https://plus.google.com/"></div></div>\n        <div><a id="tool_googlemap"  href="https://maps.google.com/"><i class="icon_googlemap"></i>Google Maps</a><div class="closebtn" hide-app="https://maps.google.com/"></div></div>\n        <div><a id="tool_translate"  href="https://translate.google.com/"><i class="icon_translate"></i>Google Translate</a><div class="closebtn" hide-app="https://translate.google.com/"></div></div>\n        <div><a id="tool_classroom"  href="https://classroom.google.com/"><i class="icon_classroom"></i>Google Classroom</a><div class="closebtn" hide-app="https://classroom.google.com/"></div></div>\n        <hr>\n         <div><a id="tool_holoschedule"   href="https://schedule.hololive.tv/lives"><i class="icon_hololive"></i>Holo Schedule</a><div class="closebtn" hide-app="https://schedule.hololive.tv/lives"></div></div>\n        <div><a id="tool_holodex"   href="https://holodex.net/"><i class="icon_hololive"></i>Holodex</a><div class="closebtn" hide-app="https://holodex.net/"></div></div>\n        <div><a id="tool_vtuberwikipedia"   href="https://virtualyoutuber.fandom.com/wiki/Virtual_YouTuber_Wiki"><i class="icon_vtuberwikipedia"></i>Virtual Youtuber Wikipedia</a><div class="closebtn" hide-app="https://virtualyoutuber.fandom.com/wiki/Virtual_YouTuber_Wiki"></div></div>\n        <div><a id="tool_twitter"   href="https://twitter.com/"><i class="icon_twitter"></i>Twitter</a><div class="closebtn" hide-app="https://twitter.com/"></div></div>\n       <div><a id="tool_facebook"   href="https://facebook.com/"><i class="icon_facebook"></i>Facebook</a><div class="closebtn" hide-app="https://facebook.com/"></div></div>\n        <div><a id="tool_amazon"     href="https://amazon.com/"><i class="icon_amazon"></i>Amazon</a><div class="closebtn" hide-app="https://amazon.com/"></div></div>\n        <div><a id="tool_ebay"       href="https://ebay.com/"><i class="icon_ebay"></i>Ebay</a><div class="closebtn" hide-app="https://ebay.com/"></div></div>\n        <div><a id="tool_wikipedia"  href="https://wikipedia.org/"><i class="icon_wikipedia"></i>Wikipedia</a><div class="closebtn" hide-app="https://wikipedia.org/"></div></div>\n        <div><a id="tool_reddit"     href="https://reddit.com/"><i class="icon_reddit"></i>Reddit</a><div class="closebtn" hide-app="https://reddit.com/"></div></div>\n        `);
@@ -105,22 +108,22 @@
                   s.appendChild(n);
                   s.appendChild(c);
                   document.getElementById("tool_menu").appendChild(s);
-                  if (localStorage.getItem("hideApp")) {
-                      if (JSON.parse(localStorage.getItem("hideApp")).length > 0) {
+                  if (store.getItem("hideApp")) {
+                      if (JSON.parse(store.getItem("hideApp")).length > 0) {
                           f("tool_menu", "Apps")
                       }
                   }
               }
-              if (localStorage.getItem("hideApp")) {
-                  u = JSON.parse(localStorage.getItem("hideApp"));
+              if (store.getItem("hideApp")) {
+                  u = JSON.parse(store.getItem("hideApp"));
                   u.forEach((e, t) => {
                       $(`#tool_menu a[href='${e}']`).parent().hide()
                   })
               }
               h()
           });
-          if (localStorage.getItem("hideApp")) {
-              u = JSON.parse(localStorage.getItem("hideApp"));
+          if (store.getItem("hideApp")) {
+              u = JSON.parse(store.getItem("hideApp"));
               if (u.length > 0) {
                   p("apps")
               }
@@ -146,8 +149,8 @@
               utils.resetClickHandler($("#topsites_menu a"), function(e) {
                   browser.runtime.sendMessage("click-TopSites")
               });
-              if (localStorage.getItem("hideLink")) {
-                  if (JSON.parse(localStorage.getItem("hideLink")).length > 0) {
+              if (store.getItem("hideLink")) {
+                  if (JSON.parse(store.getItem("hideLink")).length > 0) {
                       f("topsites_menu", "Links")
                   }
               }
@@ -159,7 +162,7 @@
           utils.resetClickHandler($(".closebtn"), function() {
               if ($(this).attr("close-for")) {
                   c.push($(this).attr("close-for"));
-                  localStorage.setItem("hideLink", JSON.stringify(c));
+                  store.setItem("hideLink", JSON.stringify(c));
                   utils.localstorage2cookie();
                   m();
                   $("#msg").text("Link removed");
@@ -167,7 +170,7 @@
               } else if ($(this).attr("hide-app")) {
                   u.push($(this).attr("hide-app"));
                   $(this).parent().remove();
-                  localStorage.setItem("hideApp", JSON.stringify(u));
+                  store.setItem("hideApp", JSON.stringify(u));
                   utils.localstorage2cookie();
                   $("#msg").text("App removed");
                   $(".undo-box").removeClass("undo-box-hide");
@@ -182,26 +185,26 @@
 
       function p(e) {
           v();
-          if (localStorage.getItem("hideApp")) {
-              if (JSON.parse(localStorage.getItem("hideApp")).length > 0) {
+          if (store.getItem("hideApp")) {
+              if (JSON.parse(store.getItem("hideApp")).length > 0) {
                   f("tool_menu", "Apps")
               }
           }
-          if (localStorage.getItem("hideLink")) {
-              if (JSON.parse(localStorage.getItem("hideLink")).length > 0) {
+          if (store.getItem("hideLink")) {
+              if (JSON.parse(store.getItem("hideLink")).length > 0) {
                   f("topsites_menu", "Links")
               }
           }
           utils.resetClickHandler($("#undobtn"), function() {
               if (e === "mostVisited") {
                   c.pop();
-                  localStorage.setItem("hideLink", JSON.stringify(c));
+                  store.setItem("hideLink", JSON.stringify(c));
                   utils.localstorage2cookie();
                   $("#topsites_menu").empty();
                   m()
               } else if (e === "apps") {
                   u.pop();
-                  localStorage.setItem("hideApp", JSON.stringify(u));
+                  store.setItem("hideApp", JSON.stringify(u));
                   utils.localstorage2cookie();
                   $("#tool_menu").empty();
                   if (u.toString().indexOf("mail.google.com") < 0) {
@@ -240,7 +243,7 @@
               $(`.${e+"_restoreBtn"}`).click(function() {
                   $(`#${$(this).attr("restore-for")}`).empty();
                   if ($(this).attr("restore-for") === "tool_menu") {
-                      localStorage.setItem("hideApp", "[]");
+                      store.setItem("hideApp", "[]");
                       if (u.toString().indexOf("mail.google.com") < 0) {
                           browser.runtime.sendMessage(browser.runtime.id, {
                               type: "fetch_email_data"
@@ -248,7 +251,7 @@
                       }
                       d()
                   } else if ($(this).attr("restore-for") === "topsites_menu") {
-                      localStorage.setItem("hideLink", "[]");
+                      store.setItem("hideLink", "[]");
                       c = [];
                       m()
                   }
@@ -359,8 +362,8 @@
                   browser.tabs.sendMessage(e[t].id, {
                       type: "weather_info",
                       info: {
-                          weather_location: JSON.parse(localStorage.getItem("weather_location")),
-                          weather_data: JSON.parse(localStorage.getItem("weather_data"))
+                          weather_location: JSON.parse(store.getItem("weather_location")),
+                          weather_data: JSON.parse(store.getItem("weather_data"))
                       }
                   })
               }
@@ -373,7 +376,7 @@
                   browser.tabs.sendMessage(e[t].id, {
                       type: "error_get_weather_in_city",
                       info: {
-                          weather_location: JSON.parse(localStorage.getItem("weather_location")),
+                          weather_location: JSON.parse(store.getItem("weather_location")),
                           error_msg: "Unable to get weather data."
                       }
                   })
@@ -384,22 +387,22 @@
       function k() {
           try {
               b = false;
-              if (!localStorage.getItem("weather_location")) {
+              if (!store.getItem("weather_location")) {
                   y = true;
                   b = false;
-                  if (localStorage.getItem("disable_weather") === "no") $("#error_box").show();
-                  localStorage.setItem("weather_location_isvalid", "false");
+                  if (store.getItem("disable_weather") === "no") $("#error_box").show();
+                  store.setItem("weather_location_isvalid", "false");
                   utils.localstorage2cookie();
                   return
               }
-              var t = JSON.parse(localStorage.getItem("weather_location"));
+              var t = JSON.parse(store.getItem("weather_location"));
               var o = user["units_weather"] == "imperial" ? "f" : "c";
               var a = "https://query.yahooapis.com/v1/public/yql?q=" + encodeURIComponent("select * from weather.forecast where woeid=" + t.woeid + ' and u="' + o + '"') + "&format=json";
               $.getJSON(a, function(a) {
                   try {
                       if (a && a.query && a.query.count == 1 && a.query.results && a.query.results.channel && a.query.results.channel.item) {
                           y = false;
-                          localStorage.setItem("weather_location_isvalid", "true");
+                          store.setItem("weather_location_isvalid", "true");
                           utils.localstorage2cookie();
                           var i = a.query.results.channel.item.condition;
                           var s = a.query.results.channel.units;
@@ -413,10 +416,10 @@
                               condition: i.text,
                               updated: new Date
                           };
-                          localStorage.setItem("weather_data", JSON.stringify(n));
+                          store.setItem("weather_data", JSON.stringify(n));
                           $("#error_box").hide();
                           $("#city_name").val(t.location_name);
-                          localStorage.setItem("user_input_city_isvalid", "true");
+                          store.setItem("user_input_city_isvalid", "true");
                           w();
                           var r = Math.round(n.fetchTemperature);
                           var l = $(".weather h1");
@@ -425,15 +428,15 @@
                           l.find(".val").html(r);
                           $(".widght .weather .city").text(u);
                           $(".widght .weather .condition").text(c);
-                          if (localStorage.getItem("disable_weather") == "yes" || y) b = false;
+                          if (store.getItem("disable_weather") == "yes" || y) b = false;
                           else b = true
                       } else {
                           y = true;
                           b = false;
-                          if (localStorage.getItem("disable_weather") === "no") $("#error_box").show();
-                          localStorage.setItem("weather_location_isvalid", "false");
+                          if (store.getItem("disable_weather") === "no") $("#error_box").show();
+                          store.setItem("weather_location_isvalid", "false");
                           $("#city_name").val("Unable to get weather data.");
-                          localStorage.setItem("user_input_city_isvalid", "false");
+                          store.setItem("user_input_city_isvalid", "false");
                           utils.localstorage2cookie();
                           if (e.debug) console.log("Error getting weather data");
                           S();
@@ -442,16 +445,16 @@
                   } catch (e) {
                       y = true;
                       b = false;
-                      if (localStorage.getItem("disable_weather") === "no") $("#error_box").show();
-                      localStorage.setItem("weather_location_isvalid", "false");
+                      if (store.getItem("disable_weather") === "no") $("#error_box").show();
+                      store.setItem("weather_location_isvalid", "false");
                       utils.localstorage2cookie();
                       trackStatusEvent("error-Weather", null, e.message)
                   }
               }).fail(function(t, o, a) {
                   y = true;
                   b = false;
-                  if (localStorage.getItem("disable_weather") === "no") $("#error_box").show();
-                  localStorage.setItem("weather_location_isvalid", "false");
+                  if (store.getItem("disable_weather") === "no") $("#error_box").show();
+                  store.setItem("weather_location_isvalid", "false");
                   utils.localstorage2cookie();
                   if (e.debug) console.log("Error in weather request: ", o)
               })
@@ -483,7 +486,7 @@
                   }
               })
           } else {
-              if (localStorage.getItem("disable_weather") == "yes" || y) b = false;
+              if (store.getItem("disable_weather") == "yes" || y) b = false;
               else b = true;
               t = e.replace("cloud.png", "clock.png");
               $(".widght .weather").fadeOut(100, function() {
@@ -568,8 +571,8 @@
 
       function T() {
           var t = new Date;
-          if (localStorage.getItem("latency")) {
-              t = new Date(Number(new Date) + Number(localStorage.getItem("latency")))
+          if (store.getItem("latency")) {
+              t = new Date(Number(new Date) + Number(store.getItem("latency")))
           }
           if (user["time_format"] == "12h") {
               var o = t.getHours() < 12 ? "AM" : "PM";
@@ -643,17 +646,17 @@
       }
 
       function G(o) {
-          if ((new Date).getTime() - parseInt(localStorage["setting_geo"]) > 6e3) {
-              delete localStorage["setting_geo"]
+          if ((new Date).getTime() - parseInt(store["setting_geo"]) > 6e3) {
+              delete store["setting_geo"]
           }
-          if (!localStorage["setting_geo"]) {
+          if (!store["setting_geo"]) {
               user["sengine"] = o
           }
           var a = SEARCH_ENGINES[o];
           t = a;
           if (a["Logo"]) {
               $("#search-engine-item-title").html('<img src="' + a["Logo"] + '"/>')
-          } else if (o == "palikan" && !localStorage["dotdotdot"]) {
+          } else if (o == "palikan" && !store["dotdotdot"]) {
               $("#search-engine-item-title").html("...")
           } else {
               $("#search-engine-item-title").html(L(o))
@@ -667,7 +670,7 @@
       $("#search-input").focus();
       $("#search-engine-select").css("display", "inline-block");
       $("#search-input").addClass("custom");
-      var R = localStorage["sengine"] || SEARCH_ENGINES_DEFAULT;
+      var R = store["sengine"] || SEARCH_ENGINES_DEFAULT;
       if (typeof R != "undefined") {
           G(R)
       }
@@ -686,7 +689,7 @@
               var o = SEARCH_ENGINES_ORDER[t];
               if (user["sengine"] != o) {
                   P(o)
-              } else if (o == "palikan" && !localStorage["dotdotdot"]) {
+              } else if (o == "palikan" && !store["dotdotdot"]) {
                   P(o)
               }
           }
@@ -707,8 +710,8 @@
       $("#search-engine-list").on("click", "li", function() {
           var e = $(this).data("name");
           if (SEARCH_ENGINES[e]) {
-              localStorage["dotdotdot"] = true;
-              if (!localStorage["setting_geo"]) {
+              store["dotdotdot"] = true;
+              if (!store["setting_geo"]) {
                   user["sengine"] = e
               }
           }
@@ -845,8 +848,8 @@
                   })
               });
               var l = 0;
-              if (localStorage.getItem("LNT-" + r.name) && !isNaN(parseInt(localStorage.getItem("LNT-" + r.name)))) l = parseInt(localStorage.getItem("LNT-" + r.name));
-              localStorage.setItem("LNT-" + r.name, l + 1);
+              if (store.getItem("LNT-" + r.name) && !isNaN(parseInt(store.getItem("LNT-" + r.name)))) l = parseInt(store.getItem("LNT-" + r.name));
+              store.setItem("LNT-" + r.name, l + 1);
               swal(r.swal, function(e) {
                   if (e) {
                       browser.cookies.set({
@@ -860,7 +863,7 @@
                           category: r.name,
                           action: "swal-click-ok"
                       });
-                      localStorage.setItem("LNC0-" + r.name, (new Date).toISOString());
+                      store.setItem("LNC0-" + r.name, (new Date).toISOString());
                       if (r["lp0"]) browser.tabs.create({
                           url: r["lp0"]
                       })
@@ -876,7 +879,7 @@
                           category: r.name,
                           action: "swal-click-cancel"
                       });
-                      localStorage.setItem("LNC1-" + r.name, (new Date).toISOString());
+                      store.setItem("LNC1-" + r.name, (new Date).toISOString());
                       if (r["lp1"]) browser.tabs.create({
                           url: r["lp1"]
                       })

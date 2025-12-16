@@ -1,5 +1,8 @@
 (function(e) {
   "use strict";
+  // Use appStorage (browser.storage.local wrapper) if available, fallback to localStorage
+  var store = e.appStorage || localStorage;
+  
   if (e.navigator.userAgent.toLowerCase().indexOf("firefox") > -1) {
       e.browser.runtime = e.browser.runtime;
       e.browser.extension = e.browser.runtime;
@@ -63,7 +66,7 @@
       var t = {};
 
       function n(e) {
-          var n = localStorage[r + e];
+          var n = store[r + e];
           if (n == null) {
               n = t[e];
               return n
@@ -83,9 +86,9 @@
           var i = r + e;
           if (typeof n == "object") {
               throw "object type not supported"
-          } else if (o == n && localStorage[i] != null) delete localStorage[i];
-          else if (n == null) delete localStorage[i];
-          else localStorage[i] = n
+          } else if (o == n && store[i] != null) delete store[i];
+          else if (n == null) delete store[i];
+          else store[i] = n
       }
       var i = {};
       var a = function(e, r) {
@@ -122,6 +125,6 @@
   e.storageDefaultKeys = [];
   e.storageDefault = function(r, t) {
       e.storageDefaultKeys.push(r);
-      if (!localStorage.getItem(r)) localStorage.setItem(r, t)
+      if (!store.getItem(r)) store.setItem(r, t)
   }
 })(this);

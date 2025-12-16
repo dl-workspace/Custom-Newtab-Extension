@@ -1,3 +1,6 @@
+// Use appStorage (browser.storage.local wrapper) if available, fallback to localStorage
+var store = window.appStorage || localStorage;
+
 window.loadAutoHideModule = function(e) {
   if (e.autoHideThread) clearTimeout(e.autoHideThread);
   e.autoHideThread = null;
@@ -46,15 +49,15 @@ window.loadAutoHideModule = function(e) {
       $("input[type=search]").off("keypress", i);
       $("input[type=text], input[type=search]").off("focusout", s)
   }
-  if (localStorage.getItem("enable_autohide") == "yes") {
+  if (store.getItem("enable_autohide") == "yes") {
       s()
   } else {
       i()
   }
-  $("#enable_autohide").prop("checked", localStorage.getItem("enable_autohide") === "yes");
+  $("#enable_autohide").prop("checked", store.getItem("enable_autohide") === "yes");
   $("#enable_autohide").off("change");
   $("#enable_autohide").on("change", function() {
-      localStorage.setItem("enable_autohide", $("#enable_autohide").is(":checked") ? "yes" : "no");
+      store.setItem("enable_autohide", $("#enable_autohide").is(":checked") ? "yes" : "no");
       if ($("#enable_autohide").is(":checked")) {
           s()
       } else {
@@ -77,12 +80,12 @@ window.stopFireworksCanvas = function() {
   if (e) e.parentNode.removeChild(e);
   startedFireworks = false;
   window.pausedAnimation = false;
-  if (localStorage.getItem("snow_type") == "rain") startRainCanvas()
+  if (store.getItem("snow_type") == "rain") startRainCanvas()
 };
 window.startFireworksCanvas = function() {
   if (startedFireworks) return;
   startedFireworks = true;
-  if (localStorage.getItem("snow_type") == "rain") stopRainCanvas();
+  if (store.getItem("snow_type") == "rain") stopRainCanvas();
   var e = document.getElementById("fireworks-canvas");
   if (e) e.parentNode.removeChild(e);
   e = document.createElement("canvas");
@@ -673,8 +676,8 @@ window.loadSnowModule = function(e) {
       }
   };
   var t = function() {
-      var t = localStorage.getItem("snow_type");
-      if (!t) localStorage.setItem("snow_type", "flake");
+      var t = store.getItem("snow_type");
+      if (!t) store.setItem("snow_type", "flake");
       switch (t) {
           case "flake":
           case "ball":
@@ -691,7 +694,7 @@ window.loadSnowModule = function(e) {
               break;
           default:
               t = "flake";
-              localStorage.setItem("snow_type", t);
+              store.setItem("snow_type", t);
               startSnowCanvas(t)
       }
       e.listAllThreads.threadSnow.resume()
@@ -702,7 +705,7 @@ window.loadSnowModule = function(e) {
       stopLeavesCanvas();
       stopFireworksCanvas()
   };
-  if (localStorage.getItem("enable_snow") == "yes") {
+  if (store.getItem("enable_snow") == "yes") {
       n();
       t();
       $("#snow_type").parent().parent().parent().show()
@@ -710,9 +713,9 @@ window.loadSnowModule = function(e) {
       n();
       $("#snow_type").parent().parent().parent().hide()
   }
-  $("#enable_snow").prop("checked", localStorage.getItem("enable_snow") === "yes");
+  $("#enable_snow").prop("checked", store.getItem("enable_snow") === "yes");
   $("#enable_snow").off("change").on("change", function() {
-      localStorage.setItem("enable_snow", $("#enable_snow").is(":checked") ? "yes" : "no");
+      store.setItem("enable_snow", $("#enable_snow").is(":checked") ? "yes" : "no");
       if ($("#enable_snow").is(":checked")) {
           t();
           $("#snow_type").parent().parent().parent().fadeIn()
@@ -724,12 +727,12 @@ window.loadSnowModule = function(e) {
           changeOptions: utils.getGlobalOptions()
       })
   });
-  if (localStorage.getItem("snow_type")) {
-      $("#snow_type").val(localStorage.getItem("snow_type"))
+  if (store.getItem("snow_type")) {
+      $("#snow_type").val(store.getItem("snow_type"))
   }
   $("#snow_type").off("change").on("change", function() {
       var e = $(this).val();
-      localStorage.setItem("snow_type", e);
+      store.setItem("snow_type", e);
       browser.runtime.sendMessage({
           changeOptions: utils.getGlobalOptions()
       });

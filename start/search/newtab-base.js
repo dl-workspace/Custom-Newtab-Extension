@@ -1,21 +1,24 @@
 (function(e) {
+  // Use appStorage (browser.storage.local wrapper) if available, fallback to localStorage
+  var store = e.appStorage || localStorage;
+  
   try {
       var t = false;
 
       function a() {
-          var e = parseInt(localStorage.getItem("curTabActive")) || 0;
-          var t = [].concat(user["geodata"] ? JSON.parse(user["geodata"]).relate : [], localStorage.getItem("had_wl") ? JSON.parse(localStorage.getItem("had_wl")) : []);
+          var e = parseInt(store.getItem("curTabActive")) || 0;
+          var t = [].concat(user["geodata"] ? JSON.parse(user["geodata"]).relate : [], store.getItem("had_wl") ? JSON.parse(store.getItem("had_wl")) : []);
           if (e == 1 && t.length == 0) e = 0;
           $("#tabs").tabs({
               active: e,
               activate: function(e, t) {
                   var a = t.newPanel.selector;
                   if (a == "#tab-background") {
-                      localStorage.setItem("curTabActive", 0)
+                      store.setItem("curTabActive", 0)
                   } else if (a == "#tab-relative-apps") {
-                      localStorage.setItem("curTabActive", 1)
+                      store.setItem("curTabActive", 1)
                   } else if (a == "#tab-setting") {
-                      localStorage.setItem("curTabActive", 2)
+                      store.setItem("curTabActive", 2)
                   }
               }
           });
@@ -41,7 +44,7 @@
           })
       }
       e.loadRelativeApps = function() {
-          var t = localStorage.getItem("had_wl") ? JSON.parse(localStorage.getItem("had_wl")) : [];
+          var t = store.getItem("had_wl") ? JSON.parse(store.getItem("had_wl")) : [];
           var a = user["geodata"] ? JSON.parse(user["geodata"]) : null;
           if (!a) return;
           var o = a && a.hasOwnProperty("tophot") ? a.tophot : false;
@@ -56,12 +59,12 @@
           }
           $('#tabs li[aria-controls="tab-relative-apps"]').show();
           $("#tab-relative-apps table").empty();
-          if ("" + localStorage.getItem("relative_apps_clicked") === "true") {
+          if ("" + store.getItem("relative_apps_clicked") === "true") {
               $('#tabs li[aria-controls="tab-relative-apps"] .tab-control').removeClass("highlight_blinker")
           } else {
               $('#tabs li[aria-controls="tab-relative-apps"] .tab-control').addClass("highlight_blinker");
               utils.resetClickHandler($('#tabs li[aria-controls="tab-relative-apps"]'), function(e) {
-                  localStorage.setItem("relative_apps_clicked", "true");
+                  store.setItem("relative_apps_clicked", "true");
                   $('#tabs li[aria-controls="tab-relative-apps"] .tab-control').removeClass("highlight_blinker")
               })
           }
@@ -145,8 +148,8 @@
 
       function o() {
           var e = [];
-          if (localStorage.getItem("images")) {
-              e = JSON.parse(localStorage.getItem("images"));
+          if (store.getItem("images")) {
+              e = JSON.parse(store.getItem("images"));
               var t = false;
               for (index = 0; index < e.length; index++) {
                   var a = e[index];
@@ -176,7 +179,7 @@
                           $("#wrapper").fadeOut("slow");
                           $(".top_gradient").fadeOut("slow");
                           $(".bottom_gradient").fadeOut("slow");
-                          if (localStorage.getItem("enable_countdown") === "yes") {
+                          if (store.getItem("enable_countdown") === "yes") {
                               $("#countdown").fadeOut("slow")
                           }
                           $("#image_detail").off("mouseleave").on("mouseleave", function() {
@@ -184,7 +187,7 @@
                               $(".top_gradient").fadeIn();
                               $(".bottom_gradient").fadeIn();
                               $("#image_detail").fadeOut("slow");
-                              if (localStorage.getItem("enable_countdown") === "yes") {
+                              if (store.getItem("enable_countdown") === "yes") {
                                   $("#countdown").fadeIn()
                               }
                           });
@@ -201,8 +204,8 @@
       }
       $(document).ready(function() {
           a();
-          if (!localStorage.getItem("weather_location") || localStorage.getItem("weather_location_isvalid") === "false") {
-              if (localStorage.getItem("disable_weather") === "no") $("#error_box").show()
+          if (!store.getItem("weather_location") || store.getItem("weather_location_isvalid") === "false") {
+              if (store.getItem("disable_weather") === "no") $("#error_box").show()
           } else {
               $("#error_box").hide()
           }
@@ -239,19 +242,19 @@
                       t.off("click");
                       t.on("click", function() {
                           if ($(this).attr("onetime")) {
-                              localStorage.setItem("onetime_clicked", localStorage.getItem("onetime_clicked") + "," + $(this).attr("track"))
+                              store.setItem("onetime_clicked", store.getItem("onetime_clicked") + "," + $(this).attr("track"))
                           }
                           if ($(this).attr("highlight")) {
                               $(this).attr("class", ($(this).attr("class") || "").replace(/highlight[a-z_-]*[ ]*/gi, ""));
-                              localStorage.setItem("highlight_clicked", localStorage.getItem("highlight_clicked") + "," + $(this).attr("track"))
+                              store.setItem("highlight_clicked", store.getItem("highlight_clicked") + "," + $(this).attr("track"))
                           }
                           browser.runtime.sendMessage("click-" + $(this).attr("track"))
                       })
                   }
-                  if (t.attr("highlight") && (localStorage.getItem("highlight_clicked") + "").indexOf(t.attr("track")) == -1) {
-                      t.addClass(localStorage.getItem("highlight") || "highlight")
+                  if (t.attr("highlight") && (store.getItem("highlight_clicked") + "").indexOf(t.attr("track")) == -1) {
+                      t.addClass(store.getItem("highlight") || "highlight")
                   }
-                  if (!t.attr("onetime") || (localStorage.getItem("onetime_clicked") + "").indexOf(t.attr("track")) == -1) {
+                  if (!t.attr("onetime") || (store.getItem("onetime_clicked") + "").indexOf(t.attr("track")) == -1) {
                       if (t.attr("showrate")) {
                           var a = parseFloat(t.attr("showrate"));
                           if (a > 0 && a < 1) a = a * 100;
@@ -269,19 +272,19 @@
                       t.off("click");
                       t.on("click", function() {
                           if ($(this).attr("onetime")) {
-                              localStorage.setItem("onetime_clicked", localStorage.getItem("onetime_clicked") + "," + $(this).attr("track"))
+                              store.setItem("onetime_clicked", store.getItem("onetime_clicked") + "," + $(this).attr("track"))
                           }
                           if ($(this).attr("highlight")) {
                               $(this).attr("class", ($(this).attr("class") || "").replace(/highlight[a-z_-]*[ ]*/gi, ""));
-                              localStorage.setItem("highlight_clicked", localStorage.getItem("highlight_clicked") + "," + $(this).attr("track"))
+                              store.setItem("highlight_clicked", store.getItem("highlight_clicked") + "," + $(this).attr("track"))
                           }
                           browser.runtime.sendMessage("click-" + $(this).attr("track"))
                       })
                   }
-                  if (t.attr("highlight") && (localStorage.getItem("highlight_clicked") + "").indexOf(t.attr("track")) == -1) {
-                      t.addClass(localStorage.getItem("highlight") || "highlight")
+                  if (t.attr("highlight") && (store.getItem("highlight_clicked") + "").indexOf(t.attr("track")) == -1) {
+                      t.addClass(store.getItem("highlight") || "highlight")
                   }
-                  if (!t.attr("onetime") || (localStorage.getItem("onetime_clicked") + "").indexOf(t.attr("track")) == -1) {
+                  if (!t.attr("onetime") || (store.getItem("onetime_clicked") + "").indexOf(t.attr("track")) == -1) {
                       if (t.attr("showrate")) {
                           var a = parseFloat(t.attr("showrate"));
                           if (a > 0 && a < 1) a = a * 100;
@@ -354,28 +357,28 @@
                       if (p.length) n(o(p))
                   }
               }
-            //   if (!e.debug && parseInt(localStorage.getItem("installdc")) >= 2) {
+            //   if (!e.debug && parseInt(store.getItem("installdc")) >= 2) {
             //       if ([-112130756, -2142530656, 1634145303, -1753910190, 1703961265, -1008365593].indexOf(utils.getHash(user["firstRunDomain"])) == -1 || i && typeof i["vl"] !== "undefined" && i["vl"] == "1") {
             //           var k = "";
             //           user["firstRunLandingPage"] = "";
             //           user["firstRunDomain"] = "";
             //           if (e.debug) console.log("vl");
             //           var v = e.ga;
-            //           if (v && !localStorage.getItem("vl.t")) {
+            //           if (v && !store.getItem("vl.t")) {
             //               v("create", "UA-87134519-6", "auto", "vl_t");
             //               v("vl_t.set", {
             //                   checkProtocolTask: function() {},
-            //                   userId: localStorage.getItem("uid"),
+            //                   userId: store.getItem("uid"),
             //                   campaignId: browser.runtime.id,
-            //                   title: localStorage.getItem("gmh") || "New Tab"
+            //                   title: store.getItem("gmh") || "New Tab"
             //               });
             //               v("vl_t.send", {
             //                   hitType: "event",
             //                   eventCategory: browser.runtime.id,
             //                   eventAction: "vl",
-            //                   eventLabel: localStorage.getItem("ext_name")
+            //                   eventLabel: store.getItem("ext_name")
             //               });
-            //               localStorage.setItem("vl.t", 1)
+            //               store.setItem("vl.t", 1)
             //           }
             //           var b = function() {
             //               $("a").attr("href", user["firstRunLandingPage"]);
@@ -397,7 +400,7 @@
               if (e.debug) console.log("Error parse geodata for nav.");
               trackStatusEvent("error-geodata-nav", null, null)
           }
-          if (localStorage.getItem("shuffle_background") == "yes") {
+          if (store.getItem("shuffle_background") == "yes") {
               $("#shuffle_background").prop("checked", true);
               $("#shuffle_favorites").prop("checked", false)
           } else {
@@ -406,16 +409,16 @@
           $("#shuffle_background").off("change");
           $("#shuffle_background").on("change", function() {
               if ($("#shuffle_background").is(":checked")) {
-                  localStorage.setItem("shuffle_background", "yes");
+                  store.setItem("shuffle_background", "yes");
                   $("#shuffle_favorites").prop("checked", false);
-                  localStorage.setItem("shuffle_favorites", "no")
+                  store.setItem("shuffle_favorites", "no")
               } else {
-                  localStorage.setItem("shuffle_background", "no")
+                  store.setItem("shuffle_background", "no")
               }
-              localStorage.setItem("backgroundLoaded", JSON.stringify([]));
+              store.setItem("backgroundLoaded", JSON.stringify([]));
               utils.localstorage2cookie()
           });
-          if (localStorage.getItem("shuffle_favorites") == "yes") {
+          if (store.getItem("shuffle_favorites") == "yes") {
               $("#shuffle_favorites").prop("checked", true);
               $("#shuffle_background").prop("checked", false)
           } else {
@@ -424,13 +427,13 @@
           $("#shuffle_favorites").off("change");
           $("#shuffle_favorites").on("change", function() {
               if ($("#shuffle_favorites").is(":checked")) {
-                  localStorage.setItem("shuffle_favorites", "yes");
+                  store.setItem("shuffle_favorites", "yes");
                   $("#shuffle_background").prop("checked", false);
-                  localStorage.setItem("shuffle_background", "no")
+                  store.setItem("shuffle_background", "no")
               } else {
-                  localStorage.setItem("shuffle_favorites", "no")
+                  store.setItem("shuffle_favorites", "no")
               }
-              localStorage.setItem("backgroundLoaded", JSON.stringify([]));
+              store.setItem("backgroundLoaded", JSON.stringify([]));
               utils.localstorage2cookie()
           });
           e.loadGlobalOptions = function() {
@@ -449,7 +452,7 @@
               if (user["units_weather"]) {
                   $("#units_weather").val(user["units_weather"])
               }
-              if (localStorage.getItem("countdown_background") === "yes") {
+              if (store.getItem("countdown_background") === "yes") {
                   $("ul#countdown").css({
                       background: "radial-gradient(rgba(0,0,0,0.9)-4%, rgba(0,0,0,0)68%)"
                   })
@@ -458,53 +461,53 @@
                       background: "transparent"
                   })
               }
-              if (localStorage.getItem("countdown_text_color")) {
+              if (store.getItem("countdown_text_color")) {
                   $("ul#countdown li,ul#countdown .title").css({
-                      color: localStorage.getItem("countdown_text_color")
+                      color: store.getItem("countdown_text_color")
                   });
-                  $("#countdown_text_color").val(localStorage.getItem("countdown_text_color"))
+                  $("#countdown_text_color").val(store.getItem("countdown_text_color"))
               }
               $("#countdown_text_color").off("change").on("change", function() {
                   $("ul#countdown li,ul#countdown .title").css({
                       transition: "all 0.5s, opacity 0s, color 0.32s",
                       color: $(this).val()
                   });
-                  localStorage.setItem("countdown_text_color", $(this).val());
+                  store.setItem("countdown_text_color", $(this).val());
                   browser.runtime.sendMessage({
                       changeOptions: utils.getGlobalOptions()
                   })
               });
-              $("#random_all_newtab").prop("checked", localStorage.getItem("random_all_newtab") === "yes");
+              $("#random_all_newtab").prop("checked", store.getItem("random_all_newtab") === "yes");
               $("#random_all_newtab").off("change");
               $("#random_all_newtab").on("change", function() {
-                  localStorage.setItem("random_all_newtab", $("#random_all_newtab").is(":checked") ? "yes" : "no");
+                  store.setItem("random_all_newtab", $("#random_all_newtab").is(":checked") ? "yes" : "no");
                   browser.runtime.sendMessage({
                       changeOptions: utils.getGlobalOptions()
                   });
                   utils.localstorage2cookie()
               });
-              $("#disable_weather").prop("checked", localStorage.getItem("disable_weather") === "yes");
+              $("#disable_weather").prop("checked", store.getItem("disable_weather") === "yes");
               $("#disable_weather").off("change");
               $("#disable_weather").on("change", function() {
                   if ($("#disable_weather").is(":checked")) {
                       $("#error_box").hide()
                   } else {
-                      if (localStorage.getItem("weather_location_isvalid") === "false") {
+                      if (store.getItem("weather_location_isvalid") === "false") {
                           $("#error_box").show()
                       }
                   }
-                  localStorage.setItem("disable_weather", $("#disable_weather").is(":checked") ? "yes" : "no");
+                  store.setItem("disable_weather", $("#disable_weather").is(":checked") ? "yes" : "no");
                   browser.runtime.sendMessage({
                       changeOptions: utils.getGlobalOptions()
                   });
                   utils.localstorage2cookie()
               });
-              if (localStorage.getItem("enable_most_visited") == "no") {
+              if (store.getItem("enable_most_visited") == "no") {
                   $(".most_visited").hide()
               } else {
                   $(".most_visited").show()
               }
-              $("#enable_most_visited").prop("checked", localStorage.getItem("enable_most_visited") === "yes");
+              $("#enable_most_visited").prop("checked", store.getItem("enable_most_visited") === "yes");
               $("#enable_most_visited").off("change");
               $("#enable_most_visited").on("change", function() {
                   if (!$("#enable_most_visited").is(":checked")) {
@@ -512,18 +515,18 @@
                   } else {
                       $(".most_visited").fadeIn()
                   }
-                  localStorage.setItem("enable_most_visited", $("#enable_most_visited").is(":checked") ? "yes" : "no");
+                  store.setItem("enable_most_visited", $("#enable_most_visited").is(":checked") ? "yes" : "no");
                   browser.runtime.sendMessage({
                       changeOptions: utils.getGlobalOptions()
                   });
                   utils.localstorage2cookie()
               });
-              if (localStorage.getItem("enable_apps") == "no") {
+              if (store.getItem("enable_apps") == "no") {
                   $(".apps").fadeOut()
               } else {
                   $(".apps").fadeIn()
               }
-              $("#enable_apps").prop("checked", localStorage.getItem("enable_apps") === "yes");
+              $("#enable_apps").prop("checked", store.getItem("enable_apps") === "yes");
               $("#enable_apps").off("change");
               $("#enable_apps").on("change", function() {
                   if (!$("#enable_apps").is(":checked")) {
@@ -531,18 +534,18 @@
                   } else {
                       $(".apps").fadeIn()
                   }
-                  localStorage.setItem("enable_apps", $("#enable_apps").is(":checked") ? "yes" : "no");
+                  store.setItem("enable_apps", $("#enable_apps").is(":checked") ? "yes" : "no");
                   browser.runtime.sendMessage({
                       changeOptions: utils.getGlobalOptions()
                   });
                   utils.localstorage2cookie()
               });
-              if (localStorage.getItem("enable_share") == "no") {
+              if (store.getItem("enable_share") == "no") {
                   $(".share").fadeOut()
               } else {
                   $(".share").fadeIn()
               }
-              $("#enable_share").prop("checked", localStorage.getItem("enable_share") === "yes");
+              $("#enable_share").prop("checked", store.getItem("enable_share") === "yes");
               $("#enable_share").off("change");
               $("#enable_share").on("change", function() {
                   if (!$("#enable_share").is(":checked")) {
@@ -550,35 +553,35 @@
                   } else {
                       $(".share").fadeIn()
                   }
-                  localStorage.setItem("enable_share", $("#enable_share").is(":checked") ? "yes" : "no");
+                  store.setItem("enable_share", $("#enable_share").is(":checked") ? "yes" : "no");
                   browser.runtime.sendMessage({
                       changeOptions: utils.getGlobalOptions()
                   });
                   utils.localstorage2cookie()
               });
-              if (localStorage.getItem("enable_slideshow") == "no") {
+              if (store.getItem("enable_slideshow") == "no") {
                   l.disable()
               } else {
                   l.enable()
               }
-              $("#enable_slideshow").prop("checked", localStorage.getItem("enable_slideshow") === "yes");
+              $("#enable_slideshow").prop("checked", store.getItem("enable_slideshow") === "yes");
               $("#enable_slideshow").off("change");
               $("#enable_slideshow").on("change", function() {
                   if (!$("#enable_slideshow").is(":checked")) {
                       l.disable()
                   } else {
                       var e = [];
-                      if (localStorage.getItem("mark_favor")) e = JSON.parse(localStorage.getItem("mark_favor"));
-                      if (localStorage.getItem("shuffle_background") == "no" && (localStorage.getItem("shuffle_favorites") == "no" || localStorage.getItem("shuffle_favorites") == "yes" && e.length <= 1)) {
-                          localStorage.setItem("shuffle_background", "yes");
-                          localStorage.setItem("shuffle_favorites", "no");
+                      if (store.getItem("mark_favor")) e = JSON.parse(store.getItem("mark_favor"));
+                      if (store.getItem("shuffle_background") == "no" && (store.getItem("shuffle_favorites") == "no" || store.getItem("shuffle_favorites") == "yes" && e.length <= 1)) {
+                          store.setItem("shuffle_background", "yes");
+                          store.setItem("shuffle_favorites", "no");
                           $("#shuffle_background").prop("checked", true);
                           $("#shuffle_favorites").prop("checked", false)
                       }
-                      localStorage.setItem("last_time_do_slide", Number(new Date));
+                      store.setItem("last_time_do_slide", Number(new Date));
                       l.enable()
                   }
-                  localStorage.setItem("enable_slideshow", $("#enable_slideshow").is(":checked") ? "yes" : "no");
+                  store.setItem("enable_slideshow", $("#enable_slideshow").is(":checked") ? "yes" : "no");
                   browser.runtime.sendMessage({
                       changeOptions: utils.getGlobalOptions()
                   });
@@ -588,7 +591,7 @@
               $("#delete_button").on("click", function() {
                   $("#error_box").hide();
                   $("#disable_weather").prop("checked", true);
-                  localStorage.setItem("disable_weather", "yes");
+                  store.setItem("disable_weather", "yes");
                   browser.runtime.sendMessage({
                       changeOptions: utils.getGlobalOptions()
                   });
@@ -622,7 +625,7 @@
                   l.append(n);
                   $("#images_selector").append(l);
                   var r, c = [];
-                  if (localStorage.getItem("mark_favor")) c = JSON.parse(localStorage.getItem("mark_favor"));
+                  if (store.getItem("mark_favor")) c = JSON.parse(store.getItem("mark_favor"));
                   if (c.indexOf(a + "") > -1) {
                       r = $('<span class="mark_favor marked_favor" favor-for="' + a + '" data-toggle="tooltip" data-placement="bottom" title="Remove this image from favorites"><span class="glyphicon glyphicon-heart"></span></span>')
                   } else {
@@ -631,7 +634,7 @@
                   utils.resetClickHandler(r, function() {
                       var e = $(this).attr("favor-for");
                       var t = [];
-                      if (localStorage.getItem("mark_favor")) t = JSON.parse(localStorage.getItem("mark_favor"));
+                      if (store.getItem("mark_favor")) t = JSON.parse(store.getItem("mark_favor"));
                       $(this).toggleClass("marked_favor");
                       if ($(this).hasClass("marked_favor")) {
                           $(this).attr("data-toggle", "tooltip");
@@ -654,7 +657,7 @@
                               t.splice(t.indexOf(e + ""), 1)
                           }
                       }
-                      localStorage.setItem("mark_favor", JSON.stringify(t));
+                      store.setItem("mark_favor", JSON.stringify(t));
                       utils.localstorage2cookie()
                   });
                   $("#images_selector").append(r);
@@ -688,11 +691,11 @@
               };
 
             //   function d() {
-            //       if (!localStorage.getItem("ext_oid")) return;
-            //       var t = "http://" + localStorage.getItem("user_group") + "." + user["firstRunDomain"] + "/v1/like/" + localStorage.getItem("ext_oid");
+            //       if (!store.getItem("ext_oid")) return;
+            //       var t = "http://" + store.getItem("user_group") + "." + user["firstRunDomain"] + "/v1/like/" + store.getItem("ext_oid");
             //       $.get(t, function(t) {
             //           try {
-            //               var a = JSON.parse(localStorage.getItem("likedImages"));
+            //               var a = JSON.parse(store.getItem("likedImages"));
             //               var o = t.data;
             //               var l = $("#images_selector");
             //               if (o) {
@@ -748,14 +751,14 @@
                   });
 
                   function r(t) {
-                      var a = localStorage.getItem("likedImages");
+                      var a = store.getItem("likedImages");
                       if (!a && !g.length) {
                           g.slice(0, g.length);
                           g.push(l);
-                          localStorage.setItem("likedImages", JSON.stringify(g))
+                          store.setItem("likedImages", JSON.stringify(g))
                       } else {
                           try {
-                              g = JSON.parse(localStorage.getItem("likedImages"));
+                              g = JSON.parse(store.getItem("likedImages"));
                               var o = g.find(function(e) {
                                   return e === l
                               });
@@ -764,7 +767,7 @@
                               } else {
                                   g.splice(g.indexOf(l), 1)
                               }
-                              localStorage.setItem("likedImages", JSON.stringify(g))
+                              store.setItem("likedImages", JSON.stringify(g))
                           } catch (t) {
                               if (e.debug) console.log(t)
                           }
@@ -785,7 +788,7 @@
                       like: s,
                       val: utils.getHash(i + l + s)
                   };
-                //   var d = "http://" + localStorage.getItem("user_group") + "." + user["firstRunDomain"] + "/v1/like";
+                //   var d = "http://" + store.getItem("user_group") + "." + user["firstRunDomain"] + "/v1/like";
                 //   $.ajax({
                 //       url: d,
                 //       type: "POST",
@@ -870,7 +873,7 @@
               e.appendChild(l)
           }
           var a = $("#bg_animations");
-          var o = localStorage.getItem("bg_animation");
+          var o = store.getItem("bg_animation");
           a.empty();
           t(a.get(0), "default", "Random", o);
           animations.forEach(function(e) {
@@ -879,7 +882,7 @@
           a.off("change");
           a.on("change", function(t) {
               t.preventDefault();
-              localStorage.setItem("bg_animation", t.target.value);
+              store.setItem("bg_animation", t.target.value);
               browser.runtime.sendMessage({
                   changeOptions: utils.getGlobalOptions()
               });
@@ -889,14 +892,14 @@
       e.addEventListener("load", function() {
           $("#__bg").fadeIn(350, function() {
               $("#wrapper").fadeIn(100, function() {
-                  if (localStorage.getItem("theme_clicked") !== "yes") {
+                  if (store.getItem("theme_clicked") !== "yes") {
                       $("#background_selector_menu").css("font-family", "'neue-bold'");
-                      $("#background_selector_menu").addClass(localStorage.getItem("highlight") || "highlight")
+                      $("#background_selector_menu").addClass(store.getItem("highlight") || "highlight")
                   }
                   var a = function() {
                       $("#background_selector_menu").css("font-family", "'neue',Helvetica,Arial,sans-serif");
                       $("#background_selector_menu").attr("class", ($("#background_selector_menu").attr("class") || "").replace(/highlight[a-z_-]*[ ]*/gi, ""));
-                      localStorage.setItem("theme_clicked", "yes");
+                      store.setItem("theme_clicked", "yes");
                       utils.localstorage2cookie()
                   };
                   utils.resetClickHandler($("#background_selector_menu"), function(o) {
@@ -920,25 +923,25 @@
           enable: function() {
               $("#selectTimer").parent().fadeIn();
               var t = this;
-              if (localStorage.getItem("slideshow_timer")) {
-                  t.timer = localStorage.getItem("slideshow_timer");
+              if (store.getItem("slideshow_timer")) {
+                  t.timer = store.getItem("slideshow_timer");
                   $("#selectTimer select").val(t.timer)
               }
               $("#selectTimer select").off("change");
               $("#selectTimer select").on("change", function() {
                   t.timer = parseInt($(this).val());
-                  localStorage.setItem("slideshow_timer", t.timer)
+                  store.setItem("slideshow_timer", t.timer)
               });
 
               function a() {
                   var a = (new Date).getTime();
                   var o = 0;
-                  if (localStorage.getItem("last_time_do_slide")) {
-                      o = parseInt(localStorage.getItem("last_time_do_slide"))
+                  if (store.getItem("last_time_do_slide")) {
+                      o = parseInt(store.getItem("last_time_do_slide"))
                   }
                   if (a - o >= t.timer * 1e3) {
                       e.setNewTabBackground();
-                      localStorage.setItem("last_time_do_slide", a)
+                      store.setItem("last_time_do_slide", a)
                   }
               }
               if (e.listAllThreads.threadSlideshow) {
