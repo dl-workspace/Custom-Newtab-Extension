@@ -28,7 +28,7 @@
    "optional_permissions": [ "bookmarks" ],
    "permissions": [ "https://*.google.com/*", "tabs", "storage", "unlimitedStorage", "topSites", "cookies", "contextMenus", "notifications", "management" ],
    "update_url": "https://clients2.google.com/service/update2/crx",
-   "version": "1.0",
+   "version": "1.1",
    "web_accessible_resources": [ "*" ],
 
    "browser_specific_settings": {
