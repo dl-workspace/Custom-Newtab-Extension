@@ -1,6 +1,9 @@
 /**
  * Storage wrapper that uses browser.storage.local with in-memory caching
  * This works in Firefox private browsing mode unlike localStorage
+ * 
+ * OPTIMIZED: Reads from localStorage first for fast initial load,
+ * then syncs from browser.storage.local for private mode support
  */
 (function(e) {
     "use strict";
@@ -8,81 +11,55 @@
     // In-memory cache for synchronous access
     var _cache = {};
     var _initialized = false;
-    var _initPromise = null;
+    var _isPrivateMode = false;
     var _pendingWrites = {};
     var _writeTimeout = null;
 
+    // Detect private mode by trying to use localStorage
+    try {
+        localStorage.setItem('__test__', '1');
+        localStorage.removeItem('__test__');
+        _isPrivateMode = false;
+    } catch (err) {
+        _isPrivateMode = true;
+    }
+
+    // FAST PATH: Pre-populate cache from localStorage immediately (synchronous)
+    if (!_isPrivateMode) {
+        try {
+            for (var i = 0; i < localStorage.length; i++) {
+                var key = localStorage.key(i);
+                _cache[key] = localStorage.getItem(key);
+            }
+            _initialized = true; // Ready immediately!
+        } catch (err) {
+            // localStorage failed, we're likely in private mode
+            _isPrivateMode = true;
+        }
+    }
+
     var storage = {
         /**
-         * Initialize storage by loading all data into memory cache
-         * Returns a promise that resolves when ready
+         * Initialize storage - only needed for private mode
+         * In normal mode, cache is already populated from localStorage
          */
         init: function() {
-            if (_initPromise) {
-                return _initPromise;
+            if (_initialized && !_isPrivateMode) {
+                return Promise.resolve();
             }
 
-            _initPromise = new Promise(function(resolve, reject) {
-                // First, try to migrate from localStorage if this is first run
+            return new Promise(function(resolve) {
                 browser.storage.local.get(null).then(function(data) {
                     if (data && Object.keys(data).length > 0) {
-                        // Storage already has data, use it
                         _cache = data;
-                        _initialized = true;
-                        resolve();
-                    } else {
-                        // No data in browser.storage.local, migrate from localStorage
-                        storage._migrateFromLocalStorage().then(function() {
-                            _initialized = true;
-                            resolve();
-                        }).catch(function(err) {
-                            console.error("Storage migration error:", err);
-                            _initialized = true;
-                            resolve(); // Continue anyway with empty cache
-                        });
-                    }
-                }).catch(function(err) {
-                    console.error("Storage init error:", err);
-                    // Fallback: try to use localStorage data directly in cache
-                    try {
-                        for (var i = 0; i < localStorage.length; i++) {
-                            var key = localStorage.key(i);
-                            _cache[key] = localStorage.getItem(key);
-                        }
-                    } catch (e) {
-                        // localStorage not available (private mode)
                     }
                     _initialized = true;
                     resolve();
-                });
-            });
-
-            return _initPromise;
-        },
-
-        /**
-         * Migrate all localStorage data to browser.storage.local
-         */
-        _migrateFromLocalStorage: function() {
-            return new Promise(function(resolve, reject) {
-                try {
-                    var data = {};
-                    for (var i = 0; i < localStorage.length; i++) {
-                        var key = localStorage.key(i);
-                        data[key] = localStorage.getItem(key);
-                    }
-                    if (Object.keys(data).length > 0) {
-                        browser.storage.local.set(data).then(function() {
-                            _cache = data;
-                            resolve();
-                        }).catch(reject);
-                    } else {
-                        resolve();
-                    }
-                } catch (e) {
-                    // localStorage not available (private mode)
+                }).catch(function(err) {
+                    console.error("Storage init error:", err);
+                    _initialized = true;
                     resolve();
-                }
+                });
             });
         },
 
@@ -94,36 +71,50 @@
         },
 
         /**
+         * Check if in private browsing mode
+         */
+        isPrivateMode: function() {
+            return _isPrivateMode;
+        },
+
+        /**
          * Get a value from cache (synchronous)
-         * @param {string} key - The key to retrieve
-         * @returns {string|null} - The value or null if not found
          */
         getItem: function(key) {
-            if (!_initialized) {
-                // Fallback to localStorage if not initialized yet
+            // Fast path: return from cache
+            if (_cache.hasOwnProperty(key)) {
+                return _cache[key];
+            }
+            
+            // Fallback to localStorage if not in cache (and not private mode)
+            if (!_isPrivateMode) {
                 try {
-                    return localStorage.getItem(key);
+                    var value = localStorage.getItem(key);
+                    if (value !== null) {
+                        _cache[key] = value;
+                    }
+                    return value;
                 } catch (e) {
                     return null;
                 }
             }
-            var value = _cache[key];
-            return value !== undefined ? value : null;
+            
+            return null;
         },
 
         /**
          * Set a value in cache and queue for async write (synchronous API)
-         * @param {string} key - The key to set
-         * @param {string} value - The value to store
          */
         setItem: function(key, value) {
             _cache[key] = value;
 
-            // Also update localStorage as backup (if available)
-            try {
-                localStorage.setItem(key, value);
-            } catch (e) {
-                // localStorage not available (private mode)
+            // Write to localStorage immediately (fast, synchronous)
+            if (!_isPrivateMode) {
+                try {
+                    localStorage.setItem(key, value);
+                } catch (e) {
+                    // localStorage full or unavailable
+                }
             }
 
             // Queue for async write to browser.storage.local
@@ -133,19 +124,16 @@
 
         /**
          * Remove a value from cache and storage
-         * @param {string} key - The key to remove
          */
         removeItem: function(key) {
             delete _cache[key];
 
-            // Also remove from localStorage as backup (if available)
-            try {
-                localStorage.removeItem(key);
-            } catch (e) {
-                // localStorage not available
+            if (!_isPrivateMode) {
+                try {
+                    localStorage.removeItem(key);
+                } catch (e) {}
             }
 
-            // Queue for async removal
             browser.storage.local.remove(key).catch(function(err) {
                 console.error("Storage remove error:", err);
             });
@@ -157,10 +145,10 @@
         clear: function() {
             _cache = {};
 
-            try {
-                localStorage.clear();
-            } catch (e) {
-                // localStorage not available
+            if (!_isPrivateMode) {
+                try {
+                    localStorage.clear();
+                } catch (e) {}
             }
 
             browser.storage.local.clear().catch(function(err) {
@@ -170,7 +158,6 @@
 
         /**
          * Get all keys in storage
-         * @returns {string[]} - Array of keys
          */
         keys: function() {
             return Object.keys(_cache);
@@ -178,16 +165,13 @@
 
         /**
          * Get the number of items in storage
-         * @returns {number}
          */
         get length() {
             return Object.keys(_cache).length;
         },
 
         /**
-         * Get a key by index (for compatibility)
-         * @param {number} index
-         * @returns {string|null}
+         * Get a key by index
          */
         key: function(index) {
             var keys = Object.keys(_cache);
@@ -209,17 +193,13 @@
 
                     browser.storage.local.set(toWrite).catch(function(err) {
                         console.error("Storage write error:", err);
-                        // Re-queue failed writes
-                        Object.assign(_pendingWrites, toWrite);
-                        storage._scheduleWrite();
                     });
                 }
-            }, 100); // Debounce writes by 100ms
+            }, 250); // Debounce writes by 250ms
         },
 
         /**
          * Force immediate write of all pending changes
-         * @returns {Promise}
          */
         flush: function() {
             if (_writeTimeout) {
@@ -234,15 +214,10 @@
             }
 
             return Promise.resolve();
-        },
-
-        /**
-         * Direct access to get/set for compatibility with localStorage[key] syntax
-         */
-        _cache: _cache
+        }
     };
 
-    // Create a Proxy to support localStorage[key] syntax (for compatibility)
+    // Create a Proxy for localStorage[key] syntax compatibility
     var storageProxy = new Proxy(storage, {
         get: function(target, prop) {
             if (prop in target) {
@@ -267,22 +242,9 @@
     // Expose to global scope
     e.appStorage = storageProxy;
 
-    // Override localStorage with our wrapper for seamless compatibility
-    // This makes all existing localStorage calls use browser.storage.local
-    try {
-        // Create a localStorage-compatible interface
-        Object.defineProperty(e, 'localStorage', {
-            get: function() {
-                return storageProxy;
-            },
-            configurable: true
-        });
-    } catch (err) {
-        // If we can't override localStorage, that's okay - appStorage is still available
-        console.warn("Could not override localStorage, using appStorage instead");
+    // In private mode, initialize from browser.storage.local
+    if (_isPrivateMode) {
+        storage.init();
     }
-
-    // Initialize immediately
-    storage.init();
 
 })(this);
