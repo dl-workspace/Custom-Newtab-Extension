@@ -1,3 +1,6 @@
+// Use appStorage (browser.storage.local wrapper) if available, fallback to localStorage
+var store = window.appStorage || localStorage;
+
 window.loadCountDownModule = function(e) {
   if (e.countDownThread) clearTimeout(e.countDownThread);
   e.countDownThread = null;
@@ -8,13 +11,13 @@ window.loadCountDownModule = function(e) {
       l = $("#countdown_text_color"),
       r = $("#countdown_background"),
       c = function() {
-          o.val(localStorage.getItem("countdownPosition"));
+          o.val(store.getItem("countdownPosition"));
           $(".countDown").removeClass("miniSize");
           $(".countDown").removeClass("center_center");
-          if (localStorage.getItem("countdownPosition")) {
-              if (localStorage.getItem("countdownPosition").toLowerCase() == "bottom center") {
+          if (store.getItem("countdownPosition")) {
+              if (store.getItem("countdownPosition").toLowerCase() == "bottom center") {
                   $(".countDown").removeClass("miniSize")
-              } else if (localStorage.getItem("countdownPosition").toLowerCase() == "center") {
+              } else if (store.getItem("countdownPosition").toLowerCase() == "center") {
                   $(".countDown").removeClass("miniSize");
                   $(".countDown").addClass("center_center")
               } else {
@@ -29,7 +32,7 @@ window.loadCountDownModule = function(e) {
           $("#countdown").fadeIn();
           o.off("change");
           o.on("change", function() {
-              localStorage.setItem("countdownPosition", $(this).val());
+              store.setItem("countdownPosition", $(this).val());
               var e = $(this).val().toLowerCase();
               if (e === "bottom center") {
                   $(".countDown").removeClass("miniSize");
@@ -47,13 +50,13 @@ window.loadCountDownModule = function(e) {
           });
           var c = 0;
           var i = "";
-          if (localStorage.getItem("countdownToTime")) {
-              a.val(localStorage.getItem("countdownToTime"));
-              c = new Date(localStorage.getItem("countdownToTime")).getTime()
+          if (store.getItem("countdownToTime")) {
+              a.val(store.getItem("countdownToTime"));
+              c = new Date(store.getItem("countdownToTime")).getTime()
           }
-          if (localStorage.getItem("countdownText")) {
-              n.val(localStorage.getItem("countdownText"));
-              i = "Countdown to " + localStorage.getItem("countdownText");
+          if (store.getItem("countdownText")) {
+              n.val(store.getItem("countdownText"));
+              i = "Countdown to " + store.getItem("countdownText");
               $("#countdownTitle").text(i)
           }
           var s = function(e) {
@@ -67,15 +70,15 @@ window.loadCountDownModule = function(e) {
                       })
                   } else {
                       c = new Date($(this).val()).getTime();
-                      localStorage.setItem("countdownToTime", $(this).val());
+                      store.setItem("countdownToTime", $(this).val());
                       var t = (new Date).getTime();
-                      if (localStorage.getItem("latency")) {
-                          t += Number(localStorage.getItem("latency"))
+                      if (store.getItem("latency")) {
+                          t += Number(store.getItem("latency"))
                       }
                       if (t > c) {
-                          localStorage.setItem("countdown_notified", "yes")
+                          store.setItem("countdown_notified", "yes")
                       } else {
-                          localStorage.setItem("countdown_notified", "no")
+                          store.setItem("countdown_notified", "no")
                       }
                       browser.runtime.sendMessage({
                           changeOptions: utils.getGlobalOptions()
@@ -94,7 +97,7 @@ window.loadCountDownModule = function(e) {
                       i = ""
                   }
                   $("#countdownTitle").text(i);
-                  localStorage.setItem("countdownText", $(this).val());
+                  store.setItem("countdownText", $(this).val());
                   browser.runtime.sendMessage({
                       changeOptions: utils.getGlobalOptions()
                   });
@@ -115,21 +118,21 @@ window.loadCountDownModule = function(e) {
 
           function w() {
               var i = (new Date).getTime();
-              if (localStorage.getItem("latency")) {
-                  i += Number(localStorage.getItem("latency"))
+              if (store.getItem("latency")) {
+                  i += Number(store.getItem("latency"))
               }
               if (i > c) {
                   d = 0;
                   g = 0;
                   m = 0;
                   f = 0;
-                  if (localStorage.getItem("countdown_notified") === "no") {
+                  if (store.getItem("countdown_notified") === "no") {
                       e.startFireworksCanvas();
                       swal({
                           allowOutsideClick: true,
                           customClass: "countdown-reached-notify",
                           title: "Congratulations!",
-                          text: '<p style="font-size:large;">You\'ve reached <span style="font-weight:bold;color:red;">' + localStorage.getItem("countdownText") + "</span>.</p>",
+                          text: '<p style="font-size:large;">You\'ve reached <span style="font-weight:bold;color:red;">' + store.getItem("countdownText") + "</span>.</p>",
                           type: "success",
                           html: true,
                           animation: false,
@@ -141,7 +144,7 @@ window.loadCountDownModule = function(e) {
                           closeOnCancel: true
                       }, function(i) {
                           var s = new Date;
-                          var u = new Date(localStorage.getItem("countdownToTime"));
+                          var u = new Date(store.getItem("countdownToTime"));
                           var d = s.getFullYear();
                           var g = u.getMonth() + 1;
                           var m = u.getDate();
@@ -152,11 +155,11 @@ window.loadCountDownModule = function(e) {
                               if (s > new Date(h)) h = `${d+1}-${("0"+g).slice(-2)}-${("0"+m).slice(-2)}T${("0"+f).slice(-2)}:${("0"+w).slice(-2)}`;
                               c = new Date(h).getTime();
                               a.val(h);
-                              localStorage.setItem("countdownToTime", h);
-                              localStorage.setItem("countdown_notified", "no")
+                              store.setItem("countdownToTime", h);
+                              store.setItem("countdown_notified", "no")
                           } else {
-                              localStorage.setItem("countdown_notified", "yes");
-                              localStorage.setItem("enable_countdown", "no");
+                              store.setItem("countdown_notified", "yes");
+                              store.setItem("enable_countdown", "no");
                               t.prop("checked", false);
                               n.parent().parent().fadeOut();
                               a.parent().parent().fadeOut();
@@ -169,10 +172,10 @@ window.loadCountDownModule = function(e) {
                           browser.runtime.sendMessage({
                               changeOptions: utils.getGlobalOptions()
                           });
-                          if (localStorage.getItem("snow_type") !== "fireworks") e.stopFireworksCanvas();
+                          if (store.getItem("snow_type") !== "fireworks") e.stopFireworksCanvas();
                           browser.runtime.sendMessage({
                               name: "click-CountdownReach",
-                              data: localStorage.getItem("countdownText")
+                              data: store.getItem("countdownText")
                           })
                       })
                   }
@@ -180,7 +183,7 @@ window.loadCountDownModule = function(e) {
                   if ($(".countdown-reached-notify").size()) {
                       $(".sweet-overlay").remove();
                       $(".countdown-reached-notify").remove();
-                      if (localStorage.getItem("snow_type") !== "fireworks") e.stopFireworksCanvas()
+                      if (store.getItem("snow_type") !== "fireworks") e.stopFireworksCanvas()
                   }
                   var s = (i - c) / 1e3;
                   s = Math.abs(Math.floor(s));
@@ -200,7 +203,7 @@ window.loadCountDownModule = function(e) {
               $("#hours .number").text(("0" + g).slice(-2));
               $("#minutes .number").text(("0" + m).slice(-2));
               $("#seconds .number").text(("0" + f).slice(-2));
-              if (localStorage.getItem("enable_countdown") == "yes") e.countDownThread = setTimeout(h, 999)
+              if (store.getItem("enable_countdown") == "yes") e.countDownThread = setTimeout(h, 999)
           }
           e.countDownThread = setTimeout(h, 1);
           e.listAllThreads.threadCountdown = {
@@ -212,14 +215,14 @@ window.loadCountDownModule = function(e) {
               }
           }
       };
-  if (localStorage.getItem("countdown_notified") == "yes") {
+  if (store.getItem("countdown_notified") == "yes") {
       if ($(".countdown-reached-notify").size()) {
           $(".sweet-overlay").remove();
           $(".countdown-reached-notify").remove();
-          if (localStorage.getItem("snow_type") !== "fireworks") e.stopFireworksCanvas()
+          if (store.getItem("snow_type") !== "fireworks") e.stopFireworksCanvas()
       }
   }
-  if (localStorage.getItem("enable_countdown") == "yes") {
+  if (store.getItem("enable_countdown") == "yes") {
       t.prop("checked", true);
       c()
   } else {
@@ -231,7 +234,7 @@ window.loadCountDownModule = function(e) {
       r.parents("li").hide();
       $("#countdown").hide()
   }
-  r.prop("checked", localStorage.getItem("countdown_background") === "yes" ? true : false);
+  r.prop("checked", store.getItem("countdown_background") === "yes" ? true : false);
   r.off("change");
   r.on("change", function(e) {
       if ($(this).is(":checked")) {
@@ -243,34 +246,34 @@ window.loadCountDownModule = function(e) {
               background: "transparent"
           })
       }
-      localStorage.setItem("countdown_background", $(this).is(":checked") ? "yes" : "no");
+      store.setItem("countdown_background", $(this).is(":checked") ? "yes" : "no");
       browser.runtime.sendMessage({
           changeOptions: utils.getGlobalOptions()
       })
   });
-  if (localStorage.getItem("countdown_text_color")) {
-      l.val(localStorage.getItem("countdown_text_color"))
+  if (store.getItem("countdown_text_color")) {
+      l.val(store.getItem("countdown_text_color"))
   } else {
       l.val("#fff")
   }
   t.off("change");
   t.on("change", function() {
       if ($(this).is(":checked")) {
-          localStorage.setItem("enable_countdown", "yes");
+          store.setItem("enable_countdown", "yes");
           var t = 0;
-          if (localStorage.getItem("countdownToTime")) t = new Date(localStorage.getItem("countdownToTime")).getTime();
+          if (store.getItem("countdownToTime")) t = new Date(store.getItem("countdownToTime")).getTime();
           var i = (new Date).getTime();
-          if (localStorage.getItem("latency")) {
-              i += Number(localStorage.getItem("latency"))
+          if (store.getItem("latency")) {
+              i += Number(store.getItem("latency"))
           }
           if (i > t) {
-              localStorage.setItem("countdown_notified", "yes")
+              store.setItem("countdown_notified", "yes")
           } else {
-              localStorage.setItem("countdown_notified", "no")
+              store.setItem("countdown_notified", "no")
           }
           c()
       } else {
-          localStorage.setItem("enable_countdown", "no");
+          store.setItem("enable_countdown", "no");
           n.parent().parent().fadeOut();
           a.parent().parent().fadeOut();
           o.parent().parent().fadeOut();

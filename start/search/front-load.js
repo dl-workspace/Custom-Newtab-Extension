@@ -1,16 +1,27 @@
 (function(e) {
+  // Use appStorage (browser.storage.local wrapper) if available, fallback to localStorage
+  var store = e.appStorage || localStorage;
+  
   e.listAllThreads = {};
   e.chosenRandomBG = "";
   var t = [],
       a = [];
-  if (localStorage.getItem("backgroundLoaded")) {
-      t = JSON.parse(localStorage.getItem("backgroundLoaded"))
+  try {
+      if (store.getItem("backgroundLoaded")) {
+          t = JSON.parse(store.getItem("backgroundLoaded"))
+      }
+  } catch(err) {
+      t = [];
   }
-  if (localStorage.getItem("exclude_list")) {
-      a = JSON.parse(localStorage.getItem("exclude_list"));
-      a.forEach(function(e, t) {
-          a[t] = Number(e.slice(3, -4))
-      })
+  try {
+      if (store.getItem("exclude_list")) {
+          a = JSON.parse(store.getItem("exclude_list"));
+          a.forEach(function(e, t) {
+              a[t] = Number(e.slice(3, -4))
+          })
+      }
+  } catch(err) {
+      a = [];
   }
   e.animations = [{
       value: "fadeIn",
@@ -79,7 +90,7 @@
   var o = document.getElementById("__bg");
   e.setBackgroundGIFOrJPG = function(e) {
       var n;
-      var l = localStorage.getItem("bg_animation");
+      var l = store.getItem("bg_animation");
       if (!l) l = "default";
       if (l === "default") {
           n = animations[Math.floor(Math.random() * animations.length)].value
@@ -87,18 +98,23 @@
           n = l
       }
       var r = e.replace("bg-0", "").replace("bg-", "").replace(".jpg", "").replace(".gif", "");
-      localStorage.setItem("last_bg", r);
+      store.setItem("last_bg", r);
       var g = true;
-      if (localStorage.getItem("shuffle_background") === "yes") {
+      if (store.getItem("shuffle_background") === "yes") {
           if (t.concat(a).unique().length + 1 >= Number(user["bg_img_list"])) {
               t = [];
-              localStorage.setItem("backgroundLoaded", JSON.stringify(t))
+              store.setItem("backgroundLoaded", JSON.stringify(t))
           }
-      } else if (localStorage.getItem("shuffle_favorites") === "yes") {
-          var i = JSON.parse(localStorage.getItem("mark_favor"));
+      } else if (store.getItem("shuffle_favorites") === "yes") {
+          var i = [];
+          try {
+              i = JSON.parse(store.getItem("mark_favor")) || [];
+          } catch(err) {
+              i = [];
+          }
           if (t.length + 1 >= i.length) {
               t = [];
-              localStorage.setItem("backgroundLoaded", JSON.stringify(t))
+              store.setItem("backgroundLoaded", JSON.stringify(t))
           }
       }
       t.forEach(function(e, t) {
@@ -108,7 +124,7 @@
       });
       if (g) {
           t.push(r);
-          localStorage.setItem("backgroundLoaded", JSON.stringify(t))
+          store.setItem("backgroundLoaded", JSON.stringify(t))
       }
       var f = Object.keys(user["bg_color_gif"]).indexOf(e.replace(/\.jpg$/, ".gif"));
       if (f > -1) {
@@ -150,11 +166,20 @@
       }, 1e3)
   };
   e.setNewTabBackground = function() {
-      var o = "" + localStorage.getItem("last_bg");
+      var o = store.getItem("last_bg");
+      // Fallback for private mode where storage may be empty
+      if (!o || o === "null" || o === "undefined") {
+          o = "1";
+      }
+      o = "" + o;
       var n = [],
           l = [];
-      if (localStorage.getItem("mark_favor")) {
-          n = JSON.parse(localStorage.getItem("mark_favor"));
+      if (store.getItem("mark_favor")) {
+          try {
+              n = JSON.parse(store.getItem("mark_favor"));
+          } catch(err) {
+              n = [];
+          }
           if (n.length >= 2 && n.indexOf(o) > -1) {
               n.splice(n.indexOf(o), 1)
           }
@@ -163,14 +188,14 @@
       for (var r = 1; r <= user["bg_img_list"]; r++) {
           if ("" + r !== o) l.push("" + r)
       }
-      if (localStorage.getItem("shuffle_background") == "yes" || localStorage.getItem("shuffle_favorites") == "yes" && n.length == 0) {
+      if (store.getItem("shuffle_background") == "yes" || store.getItem("shuffle_favorites") == "yes" && n.length == 0) {
           var g;
           if (o == "0") {
               g = 1
           } else {
               g = l.diff(t)[Math.floor(Math.random() * l.diff(t).length)]
           }
-          if (localStorage.getItem("shuffle_background") == "yes") {
+          if (store.getItem("shuffle_background") == "yes") {
               if (Number(user["bg_img_list"]) === a.length) {
                   g = o
               } else {
@@ -180,11 +205,11 @@
               }
           }
           chosenRandomBG = "bg-" + (Number(g) < 100 ? ("0" + g).slice(-2) : g) + ".jpg"
-      } else if (localStorage.getItem("shuffle_favorites") == "yes") {
+      } else if (store.getItem("shuffle_favorites") == "yes") {
           var g = n.diff(t)[Math.floor(Math.random() * n.diff(t).length)];
           chosenRandomBG = "bg-" + (Number(g) < 100 ? ("0" + g).slice(-2) : g) + ".jpg"
       } else {
-          if (localStorage.getItem("enable_slideshow") === "yes") {
+          if (store.getItem("enable_slideshow") === "yes") {
               var g = Number(o) + 1;
               if (g > user["bg_img_list"]) {
                   g = 1
@@ -196,11 +221,11 @@
       }
       e.setBackgroundGIFOrJPG(chosenRandomBG)
   };
-  if (localStorage.getItem("c_bg_b_d") === "no" || !localStorage.getItem("c_bg_b_d")) {
+  if (store.getItem("c_bg_b_d") === "no" || !store.getItem("c_bg_b_d")) {
       e.setNewTabBackground()
   } else {
-      var n = localStorage.getItem("last_bg");
-      if (n) {
+      var n = store.getItem("last_bg");
+      if (n && n !== "null" && n !== "undefined") {
           chosenRandomBG = "bg-" + (Number(n) < 100 ? ("0" + n).slice(-2) : n) + ".jpg"
       } else {
           chosenRandomBG = "bg-01.jpg"

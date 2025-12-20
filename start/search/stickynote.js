@@ -1,3 +1,6 @@
+// Use appStorage (browser.storage.local wrapper) if available, fallback to localStorage
+var store = window.appStorage || localStorage;
+
 function dragElement(e, t, n) {
   var o = 0,
       i = 0,
@@ -478,7 +481,7 @@ var StickyNote = function(e, t) {
   if (t) {
       c.focus();
       window.storedNotes.push(x);
-      localStorage.setItem("notes", JSON.stringify(window.storedNotes))
+      store.setItem("notes", JSON.stringify(window.storedNotes))
   }
   this.onAddButtonClick = function(e) {
       syncNote(1, e.noteToSave)
@@ -522,11 +525,11 @@ function syncNote(e, t, n) {
           options: n
       }
   }, function(e) {});
-  localStorage.setItem("notes", JSON.stringify(window.storedNotes))
+  store.setItem("notes", JSON.stringify(window.storedNotes))
 }
 
 function removeAllNotes() {
-  localStorage.setItem("notes", "[]");
+  store.setItem("notes", "[]");
   stnButton.innerHTML = "+ New note";
   noteContainer.innerHTML = "";
   window.storedNotes = [];
@@ -616,7 +619,7 @@ function messageHandle() {
                   break
           }
           try {
-              window.storedNotes = JSON.parse(localStorage.getItem("notes"))
+              window.storedNotes = JSON.parse(store.getItem("notes"))
           } catch (e) {
               if (window.debug) console.log(e.message)
           }
@@ -681,8 +684,8 @@ function createMenuButton() {
 }
 
 function onLoad() {
-  var e = localStorage.getItem("enable_note");
-  var t = localStorage.getItem("notes");
+  var e = store.getItem("enable_note");
+  var t = store.getItem("notes");
   if (t) {
       try {
           window.storedNotes = JSON.parse(t)
@@ -701,7 +704,7 @@ function onLoad() {
       syncNote(2, {
           enabled: e.target.checked
       });
-      localStorage.setItem("enable_note", e.target.checked ? "yes" : "no")
+      store.setItem("enable_note", e.target.checked ? "yes" : "no")
   });
   messageHandle()
 }

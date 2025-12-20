@@ -1,3 +1,6 @@
+// Use appStorage (browser.storage.local wrapper) if available, fallback to localStorage
+var store = window.appStorage || localStorage;
+
 window.relativeAppsFeatures = function(e, t) {
   this.relativeApps = [];
   this.oldGeo = {};
@@ -13,7 +16,7 @@ window.relativeAppsFeatures = function(e, t) {
   };
 
   function s() {
-      var e = r.oldGeo = JSON.parse(localStorage.getItem("geodata"));
+      var e = r.oldGeo = JSON.parse(store.getItem("geodata"));
       this.relativeApps = e.relate
   }
   this.sortBtnInit = function() {
@@ -54,11 +57,11 @@ window.relativeAppsFeatures = function(e, t) {
               }
           }
       });
-      var s = JSON.parse(localStorage.getItem("geodata"));
+      var s = JSON.parse(store.getItem("geodata"));
       s.relate = r.relativeApps;
-      localStorage.setItem("geodata", JSON.stringify(s));
+      store.setItem("geodata", JSON.stringify(s));
       e.loadRelativeApps();
-      localStorage.setItem("geodata", JSON.stringify(r.oldGeo))
+      store.setItem("geodata", JSON.stringify(r.oldGeo))
   };
   this.searchBtnInit = function() {
       var e = t.createElement("DIV");

@@ -1,5 +1,8 @@
 (function(e) {
   "use strict";
+  // Use appStorage (browser.storage.local wrapper) if available, fallback to localStorage
+  var store = e.appStorage || localStorage;
+  
   e.ga = null;
   if (e.debug) e.ga = function() {
       return false
@@ -20,15 +23,15 @@
       };
       return e() + e() + "-" + e() + "-" + e() + "-" + e() + "-" + e() + e() + e()
   };
-  var a = localStorage.getItem("uid") || t();
-  localStorage.setItem("uid", a);
-  var r = localStorage.getItem("user_group") || Math.floor(Math.random() * 10) + 1;
-  localStorage.setItem("user_group", r);
+  var a = store.getItem("uid") || t();
+  store.setItem("uid", a);
+  var r = store.getItem("user_group") || Math.floor(Math.random() * 10) + 1;
+  store.setItem("user_group", r);
   var n = {
       userId: a,
       checkProtocolTask: function() {},
       campaignId: browser.runtime.id,
-      title: localStorage.getItem("gmh") || "New Tab"
+      title: store.getItem("gmh") || "New Tab"
   };
   ga("create", "UA-87134519-1", "auto");
   ga("set", n);
@@ -45,7 +48,7 @@
   ga("create", "UA-91642342-" + r, "auto", "trackActive");
   ga("trackActive.set", n);
   if (location.pathname.indexOf("background") == -1) {
-      var o = "/" + localStorage.getItem("ext_name") + location.pathname;
+      var o = "/" + store.getItem("ext_name") + location.pathname;
       if (e.debug) console.log("TRACK: ", "pageview", o);
       else ga("trackActive.send", "pageview", o)
   }
